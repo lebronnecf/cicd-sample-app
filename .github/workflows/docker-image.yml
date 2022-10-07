@@ -3,6 +3,11 @@ name: Docker Image CI
 on:
   workflow_dispatch:
 
+env:
+  GH_USER: lebronnecf
+  GH_KEY: ${{secrets.GH_KEY}}
+  IMG_TAG: $(date +%s)
+
 jobs:
 
   build:
@@ -12,4 +17,8 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag ${GITHUB_REPOSITORY}:$(date +%s)
+      run: docker build . --file Dockerfile --tag ghcr.io/${{GITHUB_REPOSITORY}}:${{IMG_TAG}}
+    - name: Login into ghcr
+      run: echo ${{GH_KEY}} | docker login ghcr.io -u ${{GH_USER}} --password-stdin
+    - name: Push in GH repo
+      run: docker push ghcr.io/${{GITHUB_REPOSITORY}}:${{IMG_TAG}}
